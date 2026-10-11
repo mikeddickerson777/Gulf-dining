@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gulf Coast Dining Guide</title>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --primary: #0c4a6e;
+    --accent: #0284c7;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 3rem;
+  }
+  .header {
+    background: var(--primary);
+    color: #ffffff;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.35rem; margin-bottom: 0.25rem; }
+  .header p { font-size: 0.85rem; opacity: 0.9; }
+  .container { max-width: 650px; margin: 0 auto; padding: 0.85rem; }
+  .search {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    background: #ffffff;
+  }
+  .filters {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .btn {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+  .stats {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .title { font-weight: 700; font-size: 1.05rem; }
+  .rating {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .loc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 0.15rem 0 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+  }
+  .tag {
+    background: #f1f5f9;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag-cat { background: #e0f2fe; color: #0369a1; }
+  .tag-price { background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; }
+  .famous {
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
+    background: #f8fafc;
+    padding: 0.5rem;
+    border-radius: 6px;
+  }
+  .famous b { color: var(--text); }
+  .notes { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Gulf Coast Dining Guide</h1>
+  <p>Redington, Madeira Beach & St. John's Pass (50 Spots &bull; 4.3+ Stars)</p>
+</div>
+
+<div class="container">
+  <input type="text" id="q" class="search" placeholder="Search dish (grouper, blackened, tacos, donuts)...">
+  
+  <div class="filters" id="btns">
+    <button class="btn active" data-c="all">All (50)</button>
+    <button class="btn" data-c="Seafood">Seafood</button>
+    <button class="btn" data-c="Mexican">Mexican & Baja</button>
+    <button class="btn" data-c="Pizza / Italian">Pizza & Italian</button>
+    <button class="btn" data-c="American / Comfort">Chicken & Comfort</button>
+    <button class="btn" data-c="Dessert & Treats">Donuts & Sweets</button>
+  </div>
+
+  <div class="stats">
+    <span id="count">Showing 50 spots</span>
+    <span>Bayesian Weighted Rank</span>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+const d = [
+  { name: "Salt Rock Grill", loc: "Indian Shores", cat: "Seafood", r: 4.6, rev: 7920, p: "$$$", res: "Yes (Recommended)", fam: "Wood-Grilled Grouper, Raw Bar Towers, Day-Boat Snapper, Kona Ribeye", note: "Upscale waterfront fine dining with oak fire pits and floor-to-ceiling Intracoastal views." },   { name: "Red Mesa Cantina", loc: "Downtown St. Petersburg", cat: "Mexican", r: 4.6, rev: 6420, p: "$$", res: "Yes (OpenTable)", fam: "Crispy Baja Fish Tacos, Churrasco Steak, Duck Confit Tacos", note: "Sprawling open-air courtyard patio with coastal Mexican fare. ~15 min drive." },
+  { name: "Friendly Fisherman", loc: "St. John's Pass", cat: "Seafood", r: 4.5, rev: 5850, p: "$$", res: "Call ahead waitlist", fam: "Fried Grouper Platter, Cook Your Catch, Captain's Feast, Hushpuppies", note: "Historic fish house tied directly to Hubbard's Marina fishing fleet." },   { name: "Crabby Bill's", loc: "Indian Rocks Beach", cat: "Seafood", r: 4.4, rev: 5200, p: "$$", res: "Walk-ins", fam: "Steamed Blue Crabs, Fried Sea Scallops, Oyster Po' Boy, Conch Chowder", note: "Longstanding casual crab shack with picnic tables and a rooftop deck." },
+  { name: "Dockside Dave's", loc: "Madeira Beach", cat: "Seafood", r: 4.6, rev: 5120, p: "$$", res: "No (First come)", fam: "Half-Pound Blackened/Fried Grouper Sandwich, Giant Onion Rings, Smoked Fish Spread", note: "Famous beach staple with exceptionally thick fresh daily cuts." },   { name: "VIP Mexican American Lounge", loc: "Treasure Island", cat: "Mexican", r: 4.7, rev: 4890, p: "$$", res: "No (Lines form early)", fam: "Famous Wet Burrito, Sizzling Fajitas, Guacamole, Salsa Trio", note: "Consistently #1 rated Mexican joint on the beaches; huge portions." },
+  { name: "Crabby's On The Pass", loc: "St. John's Pass / Treasure Island", cat: "Seafood", r: 4.4, rev: 4320, p: "$$", res: "Online waitlist", fam: "Bairdi Crab Clusters, Peel & Eat Pink Shrimp, Grouper Sliders", note: "Sprawling waterfront deck with dolphin and boat traffic views." },   { name: "The Conch Republic Grill", loc: "North Redington Beach", cat: "Seafood", r: 4.5, rev: 4230, p: "$$", res: "Online waitlist", fam: "Conch Fritters, Hand-Battered Fish & Chips, Blackened Mahi", note: "Casual Key West atmosphere with covered patio and generous family portions." },
+  { name: "Guppy's on the Beach", loc: "Indian Rocks Beach", cat: "Seafood", r: 4.6, rev: 4100, p: "$$", res: "Call ahead accepted", fam: "Bacon-Wrapped Swordfish, Blackened Grouper with Mango Salsa, Tuna Tartare", note: "Highly rated upscale-casual coastal grill." },   { name: "Sculley's Waterfront", loc: "St. John's Pass", cat: "Seafood", r: 4.3, rev: 3950, p: "$$", res: "Call ahead / Walk-in", fam: "Bacon-Wrapped BBQ Scallops, Crab Cake Sandwiches, Fried Shrimp Baskets", note: "Boardwalk location over the water with breezy outdoor deck seating." },
+  { name: "Caddy's Madeira Beach", loc: "Madeira Beach", cat: "Seafood", r: 4.4, rev: 3840, p: "$$", res: "Walk-ins", fam: "Blackened Fish Tacos, Fresh Grouper Bites, Crab Cakes", note: "Intracoastal dockside spot with boat slips and live acoustic music." },   { name: "Daiquiri Shak Raw Bar", loc: "Madeira Beach", cat: "Seafood", r: 4.3, rev: 3450, p: "$$", res: "No", fam: "Steamed Middle Neck Clams, Shucked Gulf Oysters, Wings, Grouper Sandwiches", note: "Energetic beach hub with reliable raw bar items." },
+  { name: "Frog Pond", loc: "North Redington Beach", cat: "American / Comfort", r: 4.6, rev: 3410, p: "$$", res: "No (Morning waits)", fam: "Smoked Salmon & Crab Benedict, Belgian Waffles, Loaded Skillets", note: "Longstanding breakfast institution with giant portions." },   { name: "Slyce Indian Rocks Beach", loc: "Indian Rocks Beach", cat: "Pizza / Italian", r: 4.7, rev: 3200, p: "$$", res: "Walk-ins", fam: "Chicago Italian Beef Pizza, Fresh Mozzarella Caprese, Craft Taps", note: "Stone-baked artisan pizza with covered outdoor patio." },
+  { name: "PJ's Oyster Bar", loc: "Indian Rocks Beach", cat: "Seafood", r: 4.4, rev: 3150, p: "$$", res: "No", fam: "Baked Garlic Parmesan Oysters, Golden Fried Clams, Grouper Reuben", note: "Classic dollar-bill adorned walls and casual seafood baskets." },   { name: "Seabreeze Island Grill", loc: "Redington Shores", cat: "Seafood", r: 4.4, rev: 3100, p: "$$", res: "Call ahead accepted", fam: "Cedar Plank Salmon, Blackened Mahi Bowls, Coconut Shrimp", note: "Spacious waterfront dining right along the Intracoastal." },
+  { name: "Hooters Madeira Beach", loc: "St. John's Pass Marina", cat: "American / Comfort", r: 4.3, rev: 3100, p: "$$", res: "No", fam: "Original Breaded Fried Buffalo Wings, Steamed Shrimp", note: "Harborfront location overlooking the active marina basin." },   { name: "Sea Hags Bar & Grill", loc: "St. Pete Beach / Blind Pass", cat: "Seafood", r: 4.4, rev: 2980, p: "$$", res: "Call ahead accepted", fam: "Blackened Mahi Mahi Sandwich, Coconut Fried Shrimp, Seafood Gumbo", note: "Marina patio with frequent live music and dock views." },
+  { name: "Slyce Madeira Beach", loc: "Madeira Beach", cat: "Pizza / Italian", r: 4.6, rev: 2850, p: "$$", res: "Walk-ins", fam: "The Sunburn Specialty Pizza, Pear & Gorgonzola Pie, Meatball Sliders", note: "Stone-baked pizzeria with fermented dough and craft taps." },   { name: "Backwaters", loc: "North Redington Beach", cat: "Seafood", r: 4.5, rev: 2680, p: "$$", res: "Call ahead accepted", fam: "Grouper Piccata, Coconut Crusted Shrimp, Prime Rib, Ahi Tuna Nachos", note: "Quiet neighborhood feel with covered waterside patio." },
+  { name: "Mad Beach Craft Brewing Co", loc: "St. John's Pass", cat: "American / Comfort", r: 4.4, rev: 2540, p: "$$", res: "Walk-ins", fam: "Nashville Hot Chicken Sandwich, Smash Burgers, Pretzel & Beer Cheese", note: "Second-story brewpub above the shops with pub games and craft brews." },   { name: "The Hut Bar & Grill", loc: "St. John's Pass", cat: "Seafood", r: 4.3, rev: 2450, p: "$$", res: "No", fam: "Gulf Shrimp Baskets, Fried Fish Tacos, Pulled Pork", note: "4,000 sq ft waterfront tiki deck right along the pass." },
+  { name: "Candy Kitchen", loc: "Madeira Beach", cat: "Dessert & Treats", r: 4.7, rev: 2190, p: "$", res: "No", fam: "Small-Batch Ice Cream (Toasted Coconut, Salted Caramel), Vintage Candies", note: "Operating since 1950; nostalgic decor and homemade scoops." },   { name: "The Boardwalk Grill", loc: "St. John's Pass Boardwalk", cat: "Seafood", r: 4.6, rev: 2150, p: "$$", res: "No (Walk-up counter)", fam: "Blackened Grouper Tacos, Lobster Rolls, Fried Oysters, Peel & Eat Shrimp", note: "Walk-up deck counter directly over the water." },
+  { name: "The Big Catch at Salt Creek", loc: "St. Pete / Gulfport", cat: "Seafood", r: 4.5, rev: 2100, p: "$$", res: "No", fam: "Fried Catfish Baskets, Blackened Snapper Sandwich, Conch Salad", note: "Florida fish-camp feel with outdoor seating along marina docks." },   { name: "Angry Pepper Taphouse", loc: "Madeira Beach", cat: "American / Comfort", r: 4.4, rev: 1980, p: "$$", res: "Walk-ins", fam: "Smoked Fried Wings, St. Louis Ribs, Blackened Catfish", note: "Comfort food and sports with 40+ craft beers on tap." },
+  { name: "Twistee Treat Madeira Beach", loc: "Madeira Beach", cat: "Dessert & Treats", r: 4.5, rev: 1870, p: "$", res: "No (Drive-thru / Walk-up)", fam: "Swirl Soft Serve Cones, Dipped Waffle Bowls, Brownie Boats", note: "Giant cone building serving smooth soft-serve with dozens of toppings." },
+  { name: "Señor Taco", loc: "Seminole / Causeway", cat: "Mexican", r: 4.6, rev: 1850, p: "$", res: "No", fam: "Ensenada-Style Crispy Fish Tacos, California Carne Asada Burrito", note: "Hidden gem for authentic Baja battered fish and shrimp tacos." },
+  { name: "Taco Bus", loc: "Treasure Island", cat: "Mexican", r: 4.3, rev: 1680, p: "$", res: "No (Counter Service)", fam: "Baja Fish Tacos, Chicken Tinga Tostadas, Burrito El Jefe", note: "Well-known street food counter for fast Mexican tacos and tortas." },
+  { name: "Sweet Brewnette", loc: "Madeira Beach", cat: "Dessert & Treats", r: 4.7, rev: 1650, p: "$", res: "No (Counter service)", fam: "Organic Espresso, Fresh Scones, Cinnamon Rolls, Avocado Toast", note: "Organic beach café with pastries and iced specialty coffee." },   { name: "Mario's Ristorante Italiano", loc: "Madeira Beach", cat: "Pizza / Italian", r: 4.5, rev: 1540, p: "$$", res: "Yes (Recommended)", fam: "Veal Parmesan, Linguine with White Clam Sauce, Lasagna, Garlic Knots", note: "Classic red-sauce family Italian with generous portions." },
+  { name: "Paradise Sweets", loc: "St. John's Pass", cat: "Dessert & Treats", r: 4.6, rev: 1480, p: "$", res: "No", fam: "Copper-Kettle Fudge, Fresh Waffle Cones, Key Lime Gelato", note: "Boardwalk favorite for fudge, gelato, and waffle cones." },   { name: "Walt'z Fish Shak", loc: "St. John's Pass", cat: "Seafood", r: 4.7, rev: 1420, p: "$$", res: "No (Arrive early)", fam: "Blackened Black Grouper, Key West Pink Shrimp, Snapper with Rice", note: "Intimate shack; chalkboard menu changes daily based on morning catch." },
+  { name: "LuLu's Oyster Bar", loc: "St. John's Pass", cat: "Seafood", r: 4.3, rev: 1420, p: "$$", res: "No", fam: "Raw & Steamed Gulf Oysters, Peel-and-Eat Pink Shrimp, Fish Tacos", note: "Quick raw bar stop with draft beers along the boardwalk." },   { name: "Mad Beach Cantina", loc: "Madeira Beach", cat: "Mexican", r: 4.5, rev: 1390, p: "$$", res: "Walk-ins / Call-ahead", fam: "Crispy Blackened Grouper Tacos, Birria Tacos, Citrus Tuna Ceviche", note: "Modern Floribbean/Baja Mexican fusion with scratch salsas." },
+  { name: "Smugglers Cove Ice Cream", loc: "Madeira Beach", cat: "Dessert & Treats", r: 4.6, rev: 1350, p: "$", res: "No", fam: "Hand-Dipped Chocolate Cones, Pirate Sundaes, Floats", note: "Quick ice cream counter next to the mini-golf course." },   { name: "Villa Gallace", loc: "Indian Rocks Beach", cat: "Pizza / Italian", r: 4.7, rev: 1320, p: "$$$", res: "Yes (Strongly advised)", fam: "Veal Chop Valdostana, Homemade Ravioli, Zuppa di Pesce Stew", note: "Sophisticated white-tablecloth Italian dining." },
+  { name: "Pipin's Diner", loc: "Madeira Beach", cat: "American / Comfort", r: 4.6, rev: 1280, p: "$", res: "No", fam: "Fried Chicken Tenders, Country Fried Steak & Eggs, Milkshakes", note: "Casual diner for budget-friendly breakfast and comfort lunches." },   { name: "Wahoo's Waterside Bar", loc: "Redington Shores", cat: "Seafood", r: 4.5, rev: 1240, p: "$$", res: "No", fam: "Blackened Wahoo Sandwich, Fried Clams, Smoked Mullet Dip", note: "Laid-back neighborhood deck bar overlooking the canal." },
+  { name: "Del Mar Mexican Beach Cantina", loc: "St. Pete Beach", cat: "Mexican", r: 4.6, rev: 1210, p: "$$", res: "Yes (Resy)", fam: "Baja Beer-Battered Fish Tacos, Tuna Tartare Tostadas, Guacamole Flights", note: "Clean California coastal style with fresh slaws and crema." },   { name: "Tito's Italian Restaurant", loc: "Madeira Beach", cat: "Pizza / Italian", r: 4.4, rev: 1120, p: "$$", res: "No", fam: "NY Giant Cheese Pizza, Calzones, Baked Ziti, Garlic Knots", note: "Classic NY slice shop feel; convenient whole pies for beach condos." },
+  { name: "Frabotta's Beach Italian Kitchen", loc: "North Redington Beach", cat: "Pizza / Italian", r: 4.5, rev: 1110, p: "$$", res: "Call-ahead accepted", fam: "Hand-Tossed Thin Pizza, Chicken Parmigiana Sub, Calzones", note: "Cozy family-run spot serving authentic East Coast recipes." },   { name: "Burrito Social", loc: "St. Pete Beach", cat: "Mexican", r: 4.5, rev: 980, p: "$$", res: "Walk-ins", fam: "Blackened Shrimp Burrito, California Burrito with Fries, Fresh Salsas", note: "California-inspired coastal burrito bar with healthy sides." },
+  { name: "The Gelato-Go", loc: "St. John's Pass", cat: "Dessert & Treats", r: 4.6, rev: 950, p: "$", res: "No", fam: "Sicilian Pistachio Gelato, Dark Chocolate Sorbetto, Affogato", note: "Traditional Italian recipe gelato made with real cream and fruit purées." },
+  { name: "Cipriani Italian Bistro", loc: "Seminole / Causeway", cat: "Pizza / Italian", r: 4.7, rev: 940, p: "$$", res: "Yes", fam: "Margherita Pizza, Penne alla Vodka, Veal Saltimbocca", note: "Authentic regional Italian just over the causeway bridge." },   { name: "Brooker Creek Tavern", loc: "Madeira Beach", cat: "American / Comfort", r: 4.4, rev: 860, p: "$$", res: "Walk-ins", fam: "Buttermilk Fried Chicken Tenders, Smash Burgers, Fried Pickles", note: "Reliable local pub with fresh comfort food." },
+  { name: "Fratelli's Pizzeria", loc: "North Redington Beach", cat: "Pizza / Italian", r: 4.5, rev: 860, p: "$$", res: "No", fam: "Grandma Sicilian Crust Pie, White Spinach Pizza, Buffalo Pizza", note: "Brooklyn-style crisp crust pizza with fast takeout service." },   { name: "Brugos Trattoria", loc: "North Redington Beach", cat: "Pizza / Italian", r: 4.6, rev: 820, p: "$$", res: "Yes (Recommended)", fam: "Chicken Marsala, Handmade Gnocchi Sorrentina, Lobster Ravioli", note: "Intimate bistro with scratch sauces and attentive service." },
+  { name: "The Boardwalk Donut & Coffee", loc: "St. John's Pass", cat: "Dessert & Treats", r: 4.7, rev: 780, p: "$", res: "No", fam: "Warm Raised Glazed Donuts, Maple Bacon Long Johns, Apple Fritters", note: "Fresh morning donuts and cold brew right by the boardwalk." },
+  { name: "Key West Smoked Fish Dip Co", loc: "Madeira Beach", cat: "Seafood", r: 4.8, rev: 530, p: "$", res: "No", fam: "Traditional Kingfish Spread, Jalapeño Amberjack Spread", note: "Dedicated smokehouse selling pints of fresh fish dip to go." }
+];
+
+// Bayesian Weighted Score Calculation
+const C = 4.5, m = 500;
+d.forEach(x => {
+  x.score = (x.rev / (x.rev + m)) * x.r + (m / (x.rev + m)) * C;
+});
+d.sort((a, b) => b.score - a.score);
+
+let curCat = 'all';
+let curQ = '';
+
+function render() {
+  const list = document.getElementById('list');
+  const countEl = document.getElementById('count');
+  
+  const filtered = d.filter(x => {
+    const matchC = curCat === 'all' || x.cat === curCat;
+    const matchS = !curQ || 
+      x.name.toLowerCase().includes(curQ) || 
+      x.fam.toLowerCase().includes(curQ) || 
+      x.loc.toLowerCase().includes(curQ);
+    return matchC && matchS;
+  });
+
+  countEl.textContent = `Showing ${filtered.length} spots`;
+
+  list.innerHTML = filtered.map(x => `
+    <div class="card">
+      <div class="row">
+        <div class="title">${x.name}</div>
+        <div class="rating">&starf; ${x.r} <span style="font-weight:400;font-size:0.75rem;">(${x.rev.toLocaleString()})</span></div>
+      </div>
+      <div class="loc">${x.loc}</div>
+      <div class="tags">
+        <span class="tag tag-cat">${x.cat}</span>
+        <span class="tag tag-price">${x.p}</span>
+        <span class="tag">Seating: ${x.res}</span>
+      </div>
+      <div class="famous"><b>Famous:</b> ${x.fam}</div>
+      <div class="notes">${x.note}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('q').addEventListener('input', e => { 
+  curQ = e.target.value.toLowerCase().trim(); 
+  render(); 
+});
+
+document.getElementById('btns').addEventListener('click', e => {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    curCat = e.target.dataset.c;
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
