@@ -129,6 +129,20 @@
   }
   .famous b { color: var(--text); }
   .notes { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+  .btn-link {
+    display: block;
+    margin-top: 0.85rem;
+    padding: 0.5rem;
+    background: #f1f5f9;
+    color: #0369a1;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+  }
+  .btn-link:active { background: #e0f2fe; }
 </style>
 </head>
 <body>
@@ -215,22 +229,26 @@ function render() {
 
   countEl.textContent = `Showing ${filtered.length} spots`;
 
-  list.innerHTML = filtered.map(x => `
-    <div class="card">
-      <div class="row">
-        <div class="title">${x.name}</div>
-        <div class="rating">&starf; ${x.r} <span style="font-weight:400;font-size:0.75rem;">(${x.rev.toLocaleString()})</span></div>
+  list.innerHTML = filtered.map(x => {
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.name + ' ' + x.loc)}`;
+    return `
+      <div class="card">
+        <div class="row">
+          <div class="title">${x.name}</div>
+          <div class="rating">&starf; ${x.r} <span style="font-weight:400;font-size:0.75rem;">(${x.rev.toLocaleString()})</span></div>
+        </div>
+        <div class="loc">${x.loc}</div>
+        <div class="tags">
+          <span class="tag tag-cat">${x.cat}</span>
+          <span class="tag tag-price">${x.p}</span>
+          <span class="tag">Seating: ${x.res}</span>
+        </div>
+        <div class="famous"><b>Famous:</b> ${x.fam}</div>
+        <div class="notes">${x.note}</div>
+        <a href="${mapUrl}" target="_blank" class="btn-link">View Menu & Reviews</a>
       </div>
-      <div class="loc">${x.loc}</div>
-      <div class="tags">
-        <span class="tag tag-cat">${x.cat}</span>
-        <span class="tag tag-price">${x.p}</span>
-        <span class="tag">Seating: ${x.res}</span>
-      </div>
-      <div class="famous"><b>Famous:</b> ${x.fam}</div>
-      <div class="notes">${x.note}</div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 document.getElementById('q').addEventListener('input', e => { 
